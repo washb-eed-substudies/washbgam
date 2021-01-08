@@ -36,3 +36,27 @@
 #Load functions (use in console)
 #devtools::load_all()
 
+#After running Code/insert_roxygen for all functions, run this:
+#document()
+
+
+#Declare package dependencies
+# use_package("washb")
+# use_package("dplyr")
+# use_package("mgcv")
+# use_package("MASS")
+
+
+
+
+
+#To install the package locally:
+#install()
+
+
+#To install off github:
+#devtools::install_github("washb-eed-substudies/washbgam"")
+
+
+
+

@@ -1,7 +1,27 @@
 
 
 
+#' Title
+#'
+#' @param d
+#' @param Y
+#' @param X
+#' @param W
+#' @param V
+#' @param id
+#' @param family
+#' @param pval
+#' @param print
+#'
+#' @return
+#' @export
+#'
+#' @examples
+
 fit_RE_gam <- function(d, Y, X, W=NULL, V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
+  set.seed(12345)
+  require(mgcv)
+  require(dplyr)
 
   if(!is.null(W)){
     W <- subset(d, select = W)

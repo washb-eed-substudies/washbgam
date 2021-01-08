@@ -1,12 +1,11 @@
 Package: washbgam
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
+Authors@R: person(given = "Andrew",
+           family = "Mertens",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           email = "amertens@berkeley.edu",
+           comment = c(ORCID = "0000-0002-1050-6721"))
 Description: R package for internal use containing shared analysis functions across the different EED substudy analyses.
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -16,3 +15,8 @@ RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 2.0.0)
 Config/testthat/edition: 2
+Imports: 
+    washb,
+    dplyr,
+    mgcv,
+    MASS

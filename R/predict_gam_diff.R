@@ -2,7 +2,22 @@
 
 
 
+#' Title
+#'
+#' @param fit
+#' @param d
+#' @param quantile_diff
+#' @param Xvar
+#' @param Yvar
+#'
+#' @return
+#' @export
+#'
+#' @examples
 predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar){
+  set.seed(12345)
+  require(mgcv)
+  require(dplyr)
 
   d$dummy<-0
 

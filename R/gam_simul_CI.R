@@ -1,4 +1,17 @@
 
+#' Title
+#'
+#' @param m
+#' @param newdata
+#' @param nreps
+#' @param xlab
+#' @param ylab
+#' @param title
+#'
+#' @return
+#' @export
+#'
+#' @examples
 gam_simul_CI <- function(m,newdata,nreps=10000, xlab="", ylab="", title="") {
   set.seed(12345)
   require(mgcv)

@@ -1,5 +1,14 @@
 
+#' Title
+#'
+#' @param plotdf
+#'
+#' @return
+#' @export
+#'
+#' @examples
 plot_gam_diff <- function(plotdf){
+  require(dplyr)
   p<-ggplot(plotdf) + geom_ribbon(aes(x=x, ymin=lb.diff, ymax=ub.diff), alpha=0.5) +
     geom_path(aes(x=x, y=lb.diff), color="blue")+
     geom_path(aes(x=x, y=ub.diff), color="red")+
