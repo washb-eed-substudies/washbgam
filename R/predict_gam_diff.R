@@ -9,12 +9,13 @@
 #' @param quantile_diff
 #' @param Xvar
 #' @param Yvar
+#' @param binaryX
 #'
 #' @return
 #' @export
 #'
 #' @examples
-predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar){
+predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, binaryX=FALSE){
   set.seed(12345)
   require(mgcv)
   require(dplyr)
@@ -40,6 +41,13 @@ predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar){
   q3_pos <- which(abs(d$X- q3)==min(abs(d$X- q3)))[1]
   d$X[q1_pos] <- q1
   d$X[q3_pos] <- q3
+
+  if(binaryX==T){
+    d$X[q1_pos] <- min(d$X)
+    d$X[q3_pos] <- max(d$X)
+    #Note, can I just grab the coefficient on X from the "fit" regression object?
+
+  }
 
   #get the direct prediction
   preds <- predict(fit,newdata=d,type="response")

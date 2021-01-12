@@ -7,6 +7,7 @@
 #' @param Y
 #' @param X
 #' @param W
+#' @param forcedW
 #' @param V
 #' @param id
 #' @param family
@@ -18,7 +19,7 @@
 #'
 #' @examples
 
-fit_RE_gam <- function(d, Y, X, W=NULL, V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
+fit_RE_gam <- function(d, Y, X, W=NULL, forcedW=grepl("age_", colnames(d)), V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
   set.seed(12345)
   require(mgcv)
   require(dplyr)
@@ -60,7 +61,9 @@ fit_RE_gam <- function(d, Y, X, W=NULL, V=NULL, id="clusterid", family = "gaussi
     }
   }
   if(!is.null(W)){
-    colnamesW <- names(W)
+    colnamesW <- ifelse(is.null(forcedW),
+                        names(W),
+                        names(W)[!(names(W) %in% forcedW)])
     screenW <- subset(gamdat, select = colnamesW)
   }else{
     screenW <- NULL
@@ -70,6 +73,17 @@ fit_RE_gam <- function(d, Y, X, W=NULL, V=NULL, id="clusterid", family = "gaussi
       cat("\n-----------------------------------------\nPre-screening the adjustment covariates:\n-----------------------------------------\n")
     suppressWarnings(Wscreen <- washb_prescreen(Y = gamdat$Y,
                                                 Ws = screenW, family = family, pval = pval, print = print))
+    #drop perfectly multicollinear variables
+    W <- subset(gamdat, select = Wscreen)
+    W$constant<-rep(1,nrow(gamdat))
+    tmp<-lm(constant ~ ., data=W)
+    to_keep<-tmp$coefficients[!is.na(tmp$coefficients)]
+    to_keep<-names(to_keep[-which(names(to_keep) == "(Intercept)")])
+    W_processed <- W[to_keep]
+
+    Wscreen <- colnames(W_processed)
+    if(!is.null(forcedW)){Wscreen <- c(Wscreen, forcedW)}
+
   }else{
     Wscreen = NULL
   }
