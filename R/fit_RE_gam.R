@@ -77,6 +77,12 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
       cat("\n-----------------------------------------\nPre-screening the adjustment covariates:\n-----------------------------------------\n")
     suppressWarnings(Wscreen <- washb_prescreen(Y = gamdat$Y,
                                                 Ws = screenW, family = family, pval = pval, print = print))
+
+    if(!is.null(forcedW)){
+      Wscreen <- c(as.character(Wscreen), as.character(forcedW))
+      paste0("\nNon-prescreened covariates:\n",forcedW)
+    }
+
     #drop perfectly multicollinear variables
     W <- subset(gamdat, select = Wscreen)
     W$constant<-rep(1,nrow(gamdat))
@@ -90,11 +96,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     W_processed <- W[which(colnames(W) %in% to_keep)]
 
     Wscreen <- colnames(W_processed)
-    if(!is.null(forcedW)){
-      Wscreen <- c(as.character(Wscreen), as.character(forcedW))
-      paste0("\nNon-prescreened covariates:\n",forcedW)
 
-    }
 
   }else{
     Wscreen = NULL
