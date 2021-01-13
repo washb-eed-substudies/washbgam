@@ -22,6 +22,7 @@
 fit_RE_gam <- function(d, Y, X, W=NULL,
                        forcedW=W[grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)],
                        V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
+
   set.seed(12345)
   require(mgcv)
   require(dplyr)
@@ -62,6 +63,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
           "Final sample size:", n.sub, "\n-----------------------------------------\n")
     }
   }
+
   if(!is.null(W)){
     if(is.null(forcedW)){
       colnamesW <- names(W)
@@ -72,15 +74,17 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   }else{
     screenW <- NULL
   }
+
   if(!is.null(screenW)){
-    if (print == TRUE)
+    if(print == TRUE){
       cat("\n-----------------------------------------\nPre-screening the adjustment covariates:\n-----------------------------------------\n")
+    }
     suppressWarnings(Wscreen <- washb_prescreen(Y = gamdat$Y,
                                                 Ws = screenW, family = family, pval = pval, print = print))
 
     if(!is.null(forcedW)){
       Wscreen <- c(as.character(Wscreen), as.character(forcedW))
-      paste0("\nNon-prescreened covariates:\n",forcedW)
+      cat("\nNon-prescreened covariates: ", paste(forcedW, sep="", collapse=", "), "\n")
     }
 
     #drop perfectly multicollinear variables
@@ -96,6 +100,8 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     W_processed <- W[which(colnames(W) %in% to_keep)]
 
     Wscreen <- colnames(W_processed)
+
+    cat("\n\nCovariated included in model:\n",Wscreen)
 
 
   }else{
