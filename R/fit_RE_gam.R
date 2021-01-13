@@ -91,8 +91,9 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
 
     Wscreen <- colnames(W_processed)
     if(!is.null(forcedW)){
-      Wscreen <- c(Wscreen, forcedW)
-      cat("\nNon-prescreened covariates:\n",forcedW)
+      Wscreen <- c(as.character(Wscreen), as.character(forcedW))
+      paste0("\nNon-prescreened covariates:\n",forcedW)
+
     }
 
   }else{
