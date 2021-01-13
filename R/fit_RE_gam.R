@@ -19,7 +19,9 @@
 #'
 #' @examples
 
-fit_RE_gam <- function(d, Y, X, W=NULL, forcedW=grepl("age_", colnames(d)), V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
+fit_RE_gam <- function(d, Y, X, W=NULL,
+                       forcedW=colnames(d)[grepl("age_", colnames(d))|grepl("agedays_", colnames(d))|grepl("ageday_", colnames(d))],
+                       V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
   set.seed(12345)
   require(mgcv)
   require(dplyr)
@@ -82,7 +84,10 @@ fit_RE_gam <- function(d, Y, X, W=NULL, forcedW=grepl("age_", colnames(d)), V=NU
     W_processed <- W[to_keep]
 
     Wscreen <- colnames(W_processed)
-    if(!is.null(forcedW)){Wscreen <- c(Wscreen, forcedW)}
+    if(!is.null(forcedW)){
+      Wscreen <- c(Wscreen, forcedW)
+      cat("\nNon-prescreened covariates:\n",forcedW)
+      }
 
   }else{
     Wscreen = NULL
