@@ -20,7 +20,7 @@
 #' @examples
 
 fit_RE_gam <- function(d, Y, X, W=NULL,
-                       forcedW=colnames(d)[grepl("age_", colnames(d))|grepl("agedays_", colnames(d))|grepl("ageday_", colnames(d))],
+                       forcedW=W[grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)],
                        V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
   set.seed(12345)
   require(mgcv)
@@ -63,9 +63,11 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     }
   }
   if(!is.null(W)){
-    colnamesW <- ifelse(is.null(forcedW),
-                        names(W),
-                        names(W)[!(names(W) %in% forcedW)])
+    if(is.null(forcedW)){
+      colnamesW <- names(W)
+    }else{
+      colnamesW <- names(W)[!(names(W) %in% forcedW)]
+    }
     screenW <- subset(gamdat, select = colnamesW)
   }else{
     screenW <- NULL
@@ -79,15 +81,19 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     W <- subset(gamdat, select = Wscreen)
     W$constant<-rep(1,nrow(gamdat))
     tmp<-lm(constant ~ ., data=W)
+    W <- subset(W, select = -c(constant))
     to_keep<-tmp$coefficients[!is.na(tmp$coefficients)]
     to_keep<-names(to_keep[-which(names(to_keep) == "(Intercept)")])
-    W_processed <- W[to_keep]
+    if(length(to_keep)!=length(colnames(W))){
+      cat("\nDropped for collinearity with other covariates:\n",colnames(W)[!(colnames(W) %in% to_keep)])
+    }
+    W_processed <- W[which(colnames(W) %in% to_keep)]
 
     Wscreen <- colnames(W_processed)
     if(!is.null(forcedW)){
       Wscreen <- c(Wscreen, forcedW)
       cat("\nNon-prescreened covariates:\n",forcedW)
-      }
+    }
 
   }else{
     Wscreen = NULL
