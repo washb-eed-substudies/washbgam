@@ -98,10 +98,16 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     tmp<-glm(constant ~ ., data=W, family=family)
     todrop <- suppressWarnings(names(tmp$coefficients)[vif(tmp) > 5])
 
+    to_drop <- NULL
+    for(i in 1:length(colnames(W))){
+      if(sum(grepl(colnames(W)[i], todrop))>0){
+        to_drop <- c(to_drop, colnames(W)[i])
+      }
+    }
     W <- subset(W, select = -c(constant))
     # to_keep<-tmp$coefficients[!is.na(tmp$coefficients)]
     # to_keep<-names(to_keep[-which(names(to_keep) == "(Intercept)")])
-    to_keep <- colnames(W)[!(colnames(W) %in% todrop)]
+    to_keep <- colnames(W)[!(colnames(W) %in% to_drop)]
     if(length(to_keep)!=length(colnames(W))){
       cat("\nDropped for collinearity with other covariates:\n",colnames(W)[!(colnames(W) %in% to_keep)])
     }
