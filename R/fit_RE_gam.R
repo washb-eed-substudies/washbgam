@@ -96,6 +96,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     W <- subset(gamdat, select = Wscreen)
     W$constant<-rep(1,nrow(gamdat))
     tmp<-glm(constant ~ ., data=W, family=family)
+    #https://daviddalpiaz.github.io/appliedstats/collinearity.html
     todrop <- suppressWarnings(names(tmp$coefficients)[vif(tmp) > 5])
 
     to_drop <- NULL
