@@ -34,19 +34,25 @@ predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, bin
 
   d <- d[order(d$X),]
 
+  if(binaryX==F){
   #Make sure subset has overall quantiles within it
   q1 <- unname(quantile(d$X,quantile_diff[1]))
   q3 <- unname(quantile(d$X,quantile_diff[2]))
+
   q1_pos <- which(abs(d$X- q1)==min(abs(d$X- q1)))[1]
   q3_pos <- which(abs(d$X- q3)==min(abs(d$X- q3)))[1]
   d$X[q1_pos] <- q1
   d$X[q3_pos] <- q3
+  }
 
   if(binaryX==T){
+    q1 <- min(d$X)
+    q3 <- max(d$X)
+    q1_pos <-1
+    q3_pos <- nrow(d)
     d$X[q1_pos] <- min(d$X)
     d$X[q3_pos] <- max(d$X)
     #Note, can I just grab the coefficient on X from the "fit" regression object?
-
   }
 
   #get the direct prediction
@@ -78,7 +84,11 @@ predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, bin
                      pred.q1=preds[q1_pos], pred.q3=preds[q3_pos],
                      point.diff, lb.diff=lb.diff, ub.diff=ub.diff, Pval=Pval)
 
+  if(binaryX=T){
+    res <- plotdf[nrow(plotdf),]
+  }else{
+    res <- plotdf[round(nrow(d)*quantile_diff[2],0),]
+  }
 
-  res <- plotdf[round(nrow(d)*quantile_diff[2],0),]
   return(list(res=res, plotdf=plotdf))
 }
