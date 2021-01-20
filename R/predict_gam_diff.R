@@ -15,6 +15,7 @@
 #' @export
 #'
 #' @examples
+
 predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, binaryX=FALSE){
   set.seed(12345)
   require(mgcv)
@@ -84,7 +85,7 @@ predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, bin
                      pred.q1=preds[q1_pos], pred.q3=preds[q3_pos],
                      point.diff, lb.diff=lb.diff, ub.diff=ub.diff, Pval=Pval)
 
-  if(binaryX=T){
+  if(binaryX==T){
     res <- plotdf[nrow(plotdf),]
   }else{
     res <- plotdf[round(nrow(d)*quantile_diff[2],0),]
