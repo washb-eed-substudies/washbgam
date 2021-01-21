@@ -57,20 +57,6 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     gamdat <- data.frame(Y, X, id, Vvar)
   }
 
-
-  n.orig <- dim(gamdat)[1]
-  rowdropped <- rep(1, nrow(gamdat))
-  rowdropped[which(complete.cases(gamdat))] <- 0
-  gamdat <- gamdat[complete.cases(gamdat), ]
-  n.sub <- dim(gamdat)[1]
-  if(print == TRUE){
-    if (n.orig > n.sub){
-      cat("\n-----------------------------------------\nDropping",
-          n.orig - n.sub, "observations due to missing values in 1 or more variables\n",
-          "Final sample size:", n.sub, "\n-----------------------------------------\n")
-    }
-  }
-
   if(!is.null(W)){
 
     if(is.null(forcedW)){
@@ -122,7 +108,6 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
 
     cat("\n\nCovariated included in model:\n",Wscreen)
 
-
   }else{
     Wscreen = NULL
   }
@@ -132,6 +117,22 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   }else{
     d <- subset(gamdat, select = c("Y","X","id", "V"))
   }
+
+
+
+  fullrows <- nrow(d)
+  d <- d %>% filter(!is.na(Y))
+  Yrows <- nrow(d)
+  cat("\nRows dropped due to missing outcome: ",fullrows - Yrows,"\n")
+  d <- d %>% filter(!is.na(X))
+  Xrows <- nrow(d)
+  cat("Rows dropped due to missing exposure: ",Yrows -Xrows,"\n")
+  cat("Percent missingness by covariate:\n")
+  sapply(d[,-c(1:3)], function(x) round(sum(is.na(x))/nrow(X)*100,1))
+  d <- d[complete.cases(d),]
+  cat("\nRows dropped due to missing covariates: ",Xrows - nrow(d),"\n")
+  cat("Final sample size: ", nrow(d),"\n")
+
 
   d$dummy<-1
 
@@ -180,7 +181,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
         equation <- as.formula(form)
 
         form_null <- paste0("Y~s(X, bs=\"cr\")+ V + ",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
-        form_null <- gsub("+ +","+",form, fixed=TRUE)
+        form_null <- gsub("+ +","+",form_null, fixed=TRUE)
         equation_null <- as.formula(form_null)
       }else{
         form <- paste0("Y~s(X, bs=\"cr\")+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
@@ -194,7 +195,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
         equation <- as.formula(form)
 
         form_null <- paste0("Y~Xc+ V + ",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
-        form_null <- gsub("+ +","+",form, fixed=TRUE)
+        form_null <- gsub("+ +","+",form_null, fixed=TRUE)
         equation_null <- as.formula(form_null)
       }else{
         form <- paste0("Y~X+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
@@ -226,7 +227,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
         equation <- as.formula(paste0("Y~X + V + X*V + s(id,bs=\"re\",by=dummy)"))
         fit <- mgcv::gam(formula = equation,data=d)
 
-        equation <- as.formula(paste0("Y~X + V + s(id,bs=\"re\",by=dummy)"))
+        equation_null <- as.formula(paste0("Y~X + V + s(id,bs=\"re\",by=dummy)"))
         fit_null <- mgcv::gam(formula = equation_null,data=d)
 
         LRp <- lrtest(fit, fit_null)[2, 5]
@@ -239,6 +240,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   }
 
   if(!is.null(V)){
+    cat("\nInteraction p-value: ",LRp,"\n")
     return(list(fit=fit, dat=d, int.p=LRp))
   }else{
     return(list(fit=fit, dat=d))
