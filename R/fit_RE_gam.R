@@ -29,6 +29,10 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   set.seed(12345)
   require(mgcv)
   require(dplyr)
+  require(faraway)
+  if(!is.null(V)){
+    require(lmtest)
+  }
 
   if(!is.null(W)){
     W <- subset(d, select = W)
@@ -171,9 +175,13 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     #Check if X is binary or continious
     if(length(unique(d$X))>2){
       if(!is.null(V)){
-        form <- paste0("Y~s(X, bs=\"cr\")+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form <- paste0("Y~s(X, bs=\"cr\")+ V + X*V+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form <- gsub("+ +","+",form, fixed=TRUE)
         equation <- as.formula(form)
+
+        form_null <- paste0("Y~s(X, bs=\"cr\")+ V + ",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form_null <- gsub("+ +","+",form, fixed=TRUE)
+        equation_null <- as.formula(form_null)
       }else{
         form <- paste0("Y~s(X, bs=\"cr\")+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form <- gsub("+ +","+",form, fixed=TRUE)
@@ -181,9 +189,13 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
       }
     }else{
       if(!is.null(V)){
-        form <- paste0("Y~X+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form <- paste0("Y~X+ V + X*V +",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form <- gsub("+ +","+",form, fixed=TRUE)
         equation <- as.formula(form)
+
+        form_null <- paste0("Y~Xc+ V + ",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form_null <- gsub("+ +","+",form, fixed=TRUE)
+        equation_null <- as.formula(form_null)
       }else{
         form <- paste0("Y~X+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form <- gsub("+ +","+",form, fixed=TRUE)
@@ -191,12 +203,20 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
       }
     }
     fit <- mgcv::gam(formula = equation,data=d)
+    if(!is.null(V)){
+      fit_null <- mgcv::gam(formula = equation_null,data=d)
+      LRp <- lrtest(fit, fit_null)[2, 5]
+    }
   }else{
 
     if(length(unique(d$X))>2){
       if(!is.null(V)){
         equation <- as.formula(paste0("Y~s(X, bs=\"cr\")+ V + X*V + s(id,bs=\"re\",by=dummy)"))
         fit <- mgcv::gam(formula = equation,data=d)
+
+        equation_null <- as.formula(paste0("Y~s(X, bs=\"cr\")+ V + s(id,bs=\"re\",by=dummy)"))
+        fit_null <- mgcv::gam(formula = equation_null,data=d)
+        LRp <- lrtest(fit, fit_null)[2, 5]
 
       }else{
         fit <- mgcv::gam(Y~s(X, bs="cr")+s(id,bs="re",by=dummy),data=d)
@@ -206,12 +226,22 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
         equation <- as.formula(paste0("Y~X + V + X*V + s(id,bs=\"re\",by=dummy)"))
         fit <- mgcv::gam(formula = equation,data=d)
 
+        equation <- as.formula(paste0("Y~X + V + s(id,bs=\"re\",by=dummy)"))
+        fit_null <- mgcv::gam(formula = equation_null,data=d)
+
+        LRp <- lrtest(fit, fit_null)[2, 5]
+
+
       }else{
         fit <- mgcv::gam(Y~X +s(id,bs="re",by=dummy),data=d)
       }
     }
   }
 
-  return(list(fit=fit, dat=d))
+  if(!is.null(V)){
+    return(list(fit=fit, dat=d, int.p=LRp))
+  }else{
+    return(list(fit=fit, dat=d))
+  }
 }
 
