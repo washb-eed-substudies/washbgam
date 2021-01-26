@@ -9,7 +9,23 @@ z <- x + rnorm(mean = 0, sd = 5, n = 101)
 w <- rnorm(mean = 0, sd = 1, n = 101)
 
 # this frame is made to exemplify the procedure
-df <- data.frame(x = x, y = y, z = z, w = w)
+df <- data.frame(x = x, y = y, z = z, w = w, clusterid=1:length(x))
+
+library(washb)
+library(washbgam)
+res <- fit_RE_gam(d=df, Y="y", X="x", W=c("y","x","z","w"), forcedW = NULL, family="gaussian")
+
+
+d=df
+Y="y"
+X="x"
+W=c("y","x","z","w")
+forcedW = NULL
+family="gaussian"
+V=NULL
+id="clusterid"
+pval = 0.2
+print=TRUE
 
 corr.matrix <- cor(df)
 corrplot.mixed(corr.matrix)
