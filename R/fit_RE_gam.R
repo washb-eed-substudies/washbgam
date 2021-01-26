@@ -91,7 +91,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     collinear_vars <- NULL
     Wdf <- W
     Wdf$constant<-rep(1,nrow(gamdat))
-    for(i in 1:(length(tmp$coefficients)-1)){
+    for(i in 1:ncol(W)){
       tmp<-glm(constant ~ ., data=Wdf, family=family)
       todrop <-  NULL
       todrop <- suppressWarnings(names(tmp$coefficients)[-1][as.vector(vif(tmp)) > 10][1])

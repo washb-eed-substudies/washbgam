@@ -30,8 +30,41 @@ corrplot(cor(df[,-indexesToDrop]))
 # df_result<-df[to_keep]
 
 #Use vif
-
-tmp<-glm(constant ~ ., data=df, family=family)
+library(faraway)
+tmp<-lm(constant ~ ., data=df)
 #https://daviddalpiaz.github.io/appliedstats/collinearity.html
-todrop <- suppressWarnings(names(tmp$coefficients)[vif(tmp) > 5])
+vif(tmp)
+todrop <- suppressWarnings(names(tmp$coefficients)[as.vector(vif(tmp)) > 10])
 
+
+
+#
+library(FSelector)
+linear.correlation(constant ~ ., data=df)
+
+
+
+#
+x1 = runif(1000)
+x2 = runif(1000)
+x3 = x1 + x2
+x4 = runif(1000)
+x5 = runif(1000)*0.00000001 +x4
+x6 = x5 + x3
+x = data.frame(x1, x2, x3, x4, x5, x6)
+X <- as.matrix(x)
+  qr.X <- qr(X, tol=1e-9, LAPACK = FALSE)
+(rnkX <- qr.X$rank)  ## 4 (number of non-collinear columns)
+(keep <- qr.X$pivot[seq_len(rnkX)])
+## 1 2 4 5
+X2 <- X[,keep]
+
+
+
+        df
+        X <- as.matrix(df)
+        qr.X <- qr(X, tol=1e-3, LAPACK = FALSE)
+        (rnkX <- qr.X$rank)  ## 4 (number of non-collinear columns)
+        (keep <- qr.X$pivot[seq_len(rnkX)])
+        ## 1 2 4 5
+        X2 <- X[,keep]
