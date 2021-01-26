@@ -20,7 +20,7 @@
 #' @examples
 
 fit_RE_gam <- function(d, Y, X, W=NULL,
-                       forcedW=W[grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)],
+                       forcedW=c("tr",W[grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)]),
                        V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
 
   cat("\nNon-prescreened covariates: ", paste(forcedW, sep="", collapse=", "), "\n")
@@ -84,21 +84,32 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
 
     #drop perfectly multicollinear variables
     W <- subset(gamdat, select = Wscreen)
-    W$constant<-rep(1,nrow(gamdat))
-    tmp<-glm(constant ~ ., data=W, family=family)
+    # W$constant<-rep(1,nrow(gamdat))
+    # tmp<-glm(constant ~ ., data=W, family=family)
     #https://daviddalpiaz.github.io/appliedstats/collinearity.html
-    todrop <- suppressWarnings(names(tmp$coefficients)[vif(tmp) > 5])
 
-    to_drop <- NULL
-    for(i in 1:length(colnames(W))){
-      if(sum(grepl(colnames(W)[i], todrop))>0){
-        to_drop <- c(to_drop, colnames(W)[i])
+    collinear_vars <- NULL
+    Wdf <- W
+    Wdf$constant<-rep(1,nrow(gamdat))
+    for(i in 1:(length(tmp$coefficients)-1)){
+      tmp<-glm(constant ~ ., data=Wdf, family=family)
+      todrop <-  NULL
+      todrop <- suppressWarnings(names(tmp$coefficients)[-1][as.vector(vif(tmp)) > 10][1])
+      if(!is.null(todrop)&!is.na(todrop)){
+        collinear_vars <- c(collinear_vars,todrop)
+        Wdf <- Wdf[,colnames(Wdf)!=todrop]
       }
     }
-    W <- subset(W, select = -c(constant))
+
+    # for(i in 1:length(colnames(W))){
+    #   if(sum(grepl(colnames(W)[i], todrop))>0){
+    #     to_drop <- c(to_drop, colnames(W)[i])
+    #   }
+    # }
+    #W <- subset(W, select = -c(constant))
     # to_keep<-tmp$coefficients[!is.na(tmp$coefficients)]
     # to_keep<-names(to_keep[-which(names(to_keep) == "(Intercept)")])
-    to_keep <- colnames(W)[!(colnames(W) %in% to_drop)]
+    to_keep <- colnames(W)[!(colnames(W) %in% collinear_vars)]
     if(length(to_keep)!=length(colnames(W))){
       cat("\nDropped for collinearity with other covariates:\n",colnames(W)[!(colnames(W) %in% to_keep)])
     }
@@ -128,7 +139,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   Xrows <- nrow(d)
   cat("Rows dropped due to missing exposure: ",Yrows -Xrows,"\n")
   cat("Percent missingness by covariate:\n")
-  sapply(d[,-c(1:3)], function(x) round(sum(is.na(x))/nrow(X)*100,1))
+  print(sapply(d[,-c(1:3)], function(x) round(sum(is.na(x))/nrow(X)*100,1)))
   d <- d[complete.cases(d),]
   cat("\nRows dropped due to missing covariates: ",Xrows - nrow(d),"\n")
   cat("Final sample size: ", nrow(d),"\n")
