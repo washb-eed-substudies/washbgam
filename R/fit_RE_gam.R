@@ -138,10 +138,12 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   d <- d %>% filter(!is.na(X))
   Xrows <- nrow(d)
   cat("Rows dropped due to missing exposure: ",Yrows -Xrows,"\n")
-  cat("Percent missingness by covariate:\n")
-  print(sapply(d[,-c(1:3)], function(x) round(sum(is.na(x))/nrow(X)*100,1)))
-  d <- d[complete.cases(d),]
-  cat("\nRows dropped due to missing covariates: ",Xrows - nrow(d),"\n")
+  if(!is.null(W) & length(Wscreen)>0){
+    cat("Percent missingness by covariate:\n")
+    print(sapply(d[,-c(1:3)], function(x) round(sum(is.na(x))/nrow(X)*100,1)))
+    d <- d[complete.cases(d),]
+    cat("\nRows dropped due to missing covariates: ",Xrows - nrow(d),"\n")
+  }
   cat("Final sample size: ", nrow(d),"\n")
 
 
