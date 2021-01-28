@@ -20,7 +20,7 @@
 #' @examples
 
 fit_RE_gam <- function(d, Y, X, W=NULL,
-                       forcedW=c(W[W=="tr"|grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)]),
+                       forcedW=c(W[W=="tr",grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)]),
                        V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
 
   cat("\nNon-prescreened covariates: ", paste(forcedW, sep="", collapse=", "), "\n")
