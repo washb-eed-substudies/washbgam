@@ -7,7 +7,7 @@
 #' @param Y
 #' @param X
 #' @param W
-#' @param forcedW
+#' @param forcedW Set to NA to skip forcing any variables, don't include to skip prescreening of "tr" and variables starting with age_, ageday_, or agedays_. Or manually set with a vector of variable names.
 #' @param V
 #' @param id
 #' @param family
@@ -20,7 +20,7 @@
 #' @examples
 
 fit_RE_gam <- function(d, Y, X, W=NULL,
-                       forcedW=c(W[W=="tr",grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)]),
+                       forcedW=NULL,
                        V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
 
   cat("\nNon-prescreened covariates: ", paste(forcedW, sep="", collapse=", "), "\n")
@@ -59,9 +59,12 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
 
   if(!is.null(W)){
 
-    if(is.null(forcedW)){
+    if(is.na(forcedW)){
       colnamesW <- names(W)
     }else{
+      if(is.null(forcedW)){
+        forcedW <- c(W[W=="tr"|grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)])
+      }
       colnamesW <- names(W)[!(names(W) %in% forcedW)]
     }
     #cat(names(W)[!(names(W) %in% forcedW)])
