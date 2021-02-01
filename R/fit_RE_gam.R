@@ -59,7 +59,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
 
   if(!is.null(W)){
 
-    if(is.na(forcedW)){
+    if(sum(is.na(forcedW))!=0){
       colnamesW <- names(W)
     }else{
       if(is.null(forcedW)){
