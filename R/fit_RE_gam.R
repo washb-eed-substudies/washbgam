@@ -63,7 +63,8 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
       colnamesW <- names(W)
     }else{
       if(is.null(forcedW)){
-        forcedW <- c(W[W=="tr"|grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)])
+        Wnames <- names(W)
+        forcedW <- c(Wnames[Wnames=="tr"|grepl("age_", Wnames)|grepl("agedays_", Wnames)|grepl("ageday_", Wnames)])
       }
       colnamesW <- names(W)[!(names(W) %in% forcedW)]
     }
