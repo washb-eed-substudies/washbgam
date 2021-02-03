@@ -66,6 +66,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
         Wnames <- names(W)
         forcedW <- c(Wnames[Wnames=="tr"|grepl("age_", Wnames)|grepl("agedays_", Wnames)|grepl("ageday_", Wnames)])
       }
+      cat("\nNon-prescreened covariates: ", paste(forcedW, sep="", collapse=", "), "\n")
       colnamesW <- names(W)[!(names(W) %in% forcedW)]
     }
     #cat(names(W)[!(names(W) %in% forcedW)])
