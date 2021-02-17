@@ -15,8 +15,6 @@
 #' @export
 #'
 #' @examples
-#'
-
 predict_gam_emm <- function(fit, d, quantile_diff = c(0.25, 0.75), Xvar, Yvar, binaryX = FALSE){
 
   set.seed(12345)

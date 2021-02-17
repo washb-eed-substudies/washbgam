@@ -30,6 +30,8 @@
 #
 # use_r("predict_gam_int")
 # use_test()
+# use_r("predict_gam_emm")
+# use_test()
 
 
 
