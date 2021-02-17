@@ -88,7 +88,8 @@ predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, bin
   if(binaryX==T){
     res <- plotdf[nrow(plotdf),]
   }else{
-    res <- plotdf[round(nrow(d)*quantile_diff[2],0),]
+    #res <- plotdf[round(nrow(d)*quantile_diff[2],0),]
+    res <- plotdf[q3_pos,]
   }
 
   return(list(res=res, plotdf=plotdf))
