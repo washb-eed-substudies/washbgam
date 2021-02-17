@@ -9,6 +9,7 @@ fit_RE_gam(
   Y,
   X,
   W = NULL,
+  forcedW = NULL,
   V = NULL,
   id = "clusterid",
   family = "gaussian",
@@ -17,6 +18,8 @@ fit_RE_gam(
 )
 }
 \arguments{
+\item{forcedW}{Set to NA to skip forcing any variables, don't include to skip prescreening of "tr" and variables starting with age_, ageday_, or agedays_. Or manually set with a vector of variable names.}
+
 \item{print}{}
 }
 \value{
