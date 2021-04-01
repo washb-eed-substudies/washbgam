@@ -19,4 +19,5 @@ Imports:
     washb,
     dplyr,
     mgcv,
-    MASS
+    MASS,
+    scam

@@ -33,6 +33,12 @@
 # use_r("predict_gam_emm")
 # use_test()
 
+# use_r("fit_coxph")
+# use_test()
+
+# use_r("predict_gam_HR")
+# use_test()
+
 
 
 #Load functions (use in console)
@@ -47,6 +53,7 @@
 # use_package("dplyr")
 # use_package("mgcv")
 # use_package("MASS")
+# use_package("scam")
 
 
 

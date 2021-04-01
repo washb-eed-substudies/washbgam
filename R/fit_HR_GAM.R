@@ -1,16 +1,16 @@
 
 
 
+
 #' Title
 #'
 #' @param d
 #' @param Y
 #' @param X
 #' @param W
-#' @param forcedW Set to NA to skip forcing any variables, don't include to skip prescreening of "tr" and variables starting with age_, ageday_, or agedays_. Or manually set with a vector of variable names.
+#' @param forcedW Set to NA to skip forcing any variables, don't include to skip prescreening of "tr" and variables starting with age_, ageday_, or childage_. Or manually set with a vector of variable names.
 #' @param V
 #' @param id
-#' @param family
 #' @param pval
 #' @param print
 #'
@@ -19,9 +19,9 @@
 #'
 #' @examples
 
-fit_RE_gam <- function(d, Y, X, W=NULL,
+fit_HR_GAM <- function(d, Y, X, age, W=NULL,
                        forcedW=NULL,
-                       V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
+                       V=NULL, id="clusterid", pval = 0.2, print=TRUE){
 
   cat("\nNon-prescreened covariates: ", paste(forcedW, sep="", collapse=", "), "\n")
   #cat("Forced covariates:", forcedW,"\n\n")
@@ -41,6 +41,8 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   colnames(Y) <- "Y"
   X <- subset(d, select = X)
   colnames(X) <- "X"
+  childage <- subset(d, select = age)
+  colnames(childage) <- "childage"
   id <- subset(d, select = id)
   colnames(id) <- "id"
 
@@ -52,9 +54,9 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   }
 
   if(!is.null(W)){
-    gamdat <- data.frame(Y, X, id, Vvar, W)
+    gamdat <- data.frame(Y, X, id, childage, Vvar, W)
   }else{
-    gamdat <- data.frame(Y, X, id, Vvar)
+    gamdat <- data.frame(Y, X, id, childage, Vvar)
   }
 
   if(!is.null(W)){
@@ -64,7 +66,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     }else{
       if(is.null(forcedW)){
         Wnames <- names(W)
-        forcedW <- c(Wnames[Wnames=="tr"|grepl("age_", Wnames)|grepl("agedays_", Wnames)|grepl("ageday_", Wnames)])
+        forcedW <- c(Wnames[Wnames=="tr"|grepl("age_", Wnames)|grepl("childage_", Wnames)|grepl("ageday_", Wnames)])
       }
       cat("\nNon-prescreened covariates: ", paste(forcedW, sep="", collapse=", "), "\n")
       colnamesW <- names(W)[!(names(W) %in% forcedW)]
@@ -80,7 +82,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
       cat("\n-----------------------------------------\nPre-screening the adjustment covariates:\n-----------------------------------------\n")
     }
     suppressWarnings(Wscreen <- washb_prescreen(Y = gamdat$Y,
-                                                Ws = screenW, family = family, pval = pval, print = print))
+                                                Ws = screenW, family = "binomial", pval = pval, print = print))
 
     if(!is.null(forcedW)){
       Wscreen <- c(as.character(Wscreen), as.character(forcedW))
@@ -97,7 +99,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     Wdf <- W
     Wdf$constant<-rep(1,nrow(gamdat))
     for(i in 1:ncol(W)){
-      tmp<-glm(constant ~ ., data=Wdf, family=family)
+      tmp<-glm(constant ~ ., data=Wdf, family="binomial")
       todrop <-  NULL
       todrop <- suppressWarnings(names(tmp$coefficients)[-1][as.vector(vif(tmp)) > 10][1])
       if(!is.null(todrop)&!is.na(todrop)){
@@ -129,9 +131,9 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   }
 
   if(!is.null(Wscreen)){
-    d <- subset(gamdat, select = c("Y","X","id", "V", Wscreen))
+    d <- subset(gamdat, select = c("Y","X","id", "childage", "V", Wscreen))
   }else{
-    d <- subset(gamdat, select = c("Y","X","id", "V"))
+    d <- subset(gamdat, select = c("Y","X","id", "childage", "V"))
   }
 
 
@@ -140,7 +142,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
   d <- d %>% filter(!is.na(Y))
   Yrows <- nrow(d)
   cat("\nRows dropped due to missing outcome: ",fullrows - Yrows,"\n")
-  d <- d %>% filter(!is.na(X))
+  d <- d %>% filter(!is.na(X), !is.na(childage))
   Xrows <- nrow(d)
   cat("Rows dropped due to missing exposure: ",Yrows -Xrows,"\n")
   if(!is.null(W) & length(Wscreen)>0){
@@ -153,6 +155,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
 
 
   d$dummy<-1
+  d <- droplevels(d)
 
   if(!is.null(W) & length(Wscreen)>0){
 
@@ -194,69 +197,74 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     #Check if X is binary or continious
     if(length(unique(d$X))>2){
       if(!is.null(V)){
-        form <- paste0("Y~s(X, bs=\"cr\")+ V + X*V+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form <- paste0("Y~s(X, bs=\"cr\")+ s(childage, bs=\"cr\")+  V + X*V+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form <- gsub("+ +","+",form, fixed=TRUE)
         equation <- as.formula(form)
 
-        form_null <- paste0("Y~s(X, bs=\"cr\")+ V + ",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form_null <- paste0("Y~s(X, bs=\"cr\")+ s(childage, bs=\"cr\")+ V + ",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form_null <- gsub("+ +","+",form_null, fixed=TRUE)
         equation_null <- as.formula(form_null)
       }else{
-        form <- paste0("Y~s(X, bs=\"cr\")+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form <- paste0("Y~s(X, bs=\"cr\")+ s(childage, bs=\"cr\") +",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form <- gsub("+ +","+",form, fixed=TRUE)
         equation <- as.formula(form)
       }
     }else{
       if(!is.null(V)){
-        form <- paste0("Y~X+ V + X*V +",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form <- paste0("Y~X+ s(childage, bs=\"cr\") + V + X*V +",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form <- gsub("+ +","+",form, fixed=TRUE)
         equation <- as.formula(form)
 
-        form_null <- paste0("Y~X+ V + ",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form_null <- paste0("Y~X+ s(childage, bs=\"cr\")+ V + ",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form_null <- gsub("+ +","+",form_null, fixed=TRUE)
         equation_null <- as.formula(form_null)
       }else{
-        form <- paste0("Y~X+",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
+        form <- paste0("Y~X+ s(childage, bs=\"cr\") +",eq_fact," +",eq_num,"+ s(id,bs=\"re\",by=dummy)")
         form <- gsub("+ +","+",form, fixed=TRUE)
         equation <- as.formula(form)
       }
     }
-    fit <- mgcv::gam(formula = equation,data=d)
+    fit <- mgcv::gam(formula = equation, family=binomial(link='cloglog'),data=d)
     if(!is.null(V)){
-      fit_null <- mgcv::gam(formula = equation_null,data=d)
+      fit_null <- mgcv::gam(formula = equation_null, family=binomial(link='cloglog'),data=d)
       LRp <- lrtest(fit, fit_null)[2, 5]
     }
   }else{
 
-    if(length(unique(d$X))>2){
+    if(length(unique(d$X))>20){
       if(!is.null(V)){
-        equation <- as.formula(paste0("Y~s(X, bs=\"cr\")+ V + X*V + s(id,bs=\"re\",by=dummy)"))
-        fit <- mgcv::gam(formula = equation,data=d)
+        equation <- as.formula(paste0("Y~s(X, bs=\"cr\")+ s(childage, bs=\"cr\") + V + X*V + s(id,bs=\"re\",by=dummy)"))
+        fit <- mgcv::gam(formula = equation, family=binomial(link='cloglog'),data=d)
 
-        equation_null <- as.formula(paste0("Y~s(X, bs=\"cr\")+ V + s(id,bs=\"re\",by=dummy)"))
-        fit_null <- mgcv::gam(formula = equation_null,data=d)
+        equation_null <- as.formula(paste0("Y~s(X, bs=\"cr\")+ s(childage, bs=\"cr\") + V + s(id,bs=\"re\",by=dummy)"))
+        fit_null <- mgcv::gam(formula = equation_null, family=binomial(link='cloglog'),data=d)
         LRp <- lrtest(fit, fit_null)[2, 5]
 
       }else{
-        fit <- mgcv::gam(Y~s(X, bs="cr")+s(id,bs="re",by=dummy),data=d)
+        fit <- mgcv::gam(Y~s(X, bs="cr")+s(id,bs="re",by=dummy), family=binomial(link='cloglog'),data=d)
       }
     }else{
       if(!is.null(V)){
-        equation <- as.formula(paste0("Y~X + V + X*V + s(id,bs=\"re\",by=dummy)"))
-        fit <- mgcv::gam(formula = equation,data=d)
+        equation <- as.formula(paste0("Y~X + s(childage, bs=\"cr\") + V + X*V + s(id,bs=\"re\",by=dummy)"))
+        fit <- mgcv::gam(formula = equation, family=binomial(link='cloglog'),data=d)
 
-        equation_null <- as.formula(paste0("Y~X + V + s(id,bs=\"re\",by=dummy)"))
-        fit_null <- mgcv::gam(formula = equation_null,data=d)
+        equation_null <- as.formula(paste0("Y~X + s(childage, bs=\"cr\") + V + s(id,bs=\"re\",by=dummy)"))
+        fit_null <- mgcv::gam(formula = equation_null, family=binomial(link='cloglog'),data=d)
 
         LRp <- lrtest(fit, fit_null)[2, 5]
 
 
       }else{
-        fit <- mgcv::gam(Y~X +s(id,bs="re",by=dummy),data=d)
+        fit <- mgcv::gam(Y~X + s(childage, bs="cr") + s(id,bs="re",by=dummy), family=binomial(link='cloglog'),data=d)
       }
     }
   }
 
+  # hr    <- exp(fit$coefficients)
+  # hr_se <- sqrt(diag(fit$Ve))
+  # hr_ci <- exp(c(fit$coefficients - 1.96*hr_se, fit$coefficients + 1.96*hr_se ))
+  #
+  # res <- data.frame(hr=hr,hr_se=hr_se,hr_ci_lower=hr_ci[1],hr_ci_upper=hr_ci[2])
   if(!is.null(V)){
     cat("\nInteraction p-value: ",LRp,"\n")
     return(list(fit=fit, dat=d, int.p=LRp))
@@ -264,4 +272,3 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     return(list(fit=fit, dat=d))
   }
 }
-

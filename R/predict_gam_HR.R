@@ -16,7 +16,7 @@
 #'
 #' @examples
 
-predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, binaryX=FALSE){
+predict_gam_HR <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, binaryX=FALSE){
   set.seed(12345)
   require(mgcv)
   require(dplyr)
@@ -36,14 +36,14 @@ predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, bin
   d <- d[order(d$X),]
 
   if(binaryX==F){
-  #Make sure subset has overall quantiles within it
-  q1 <- unname(quantile(d$X,quantile_diff[1]))
-  q3 <- unname(quantile(d$X,quantile_diff[2]))
+    #Make sure subset has overall quantiles within it
+    q1 <- unname(quantile(d$X,quantile_diff[1]))
+    q3 <- unname(quantile(d$X,quantile_diff[2]))
 
-  q1_pos <- which(abs(d$X- q1)==min(abs(d$X- q1)))[1]
-  q3_pos <- which(abs(d$X- q3)==min(abs(d$X- q3)))[1]
-  d$X[q1_pos] <- q1
-  d$X[q3_pos] <- q3
+    q1_pos <- which(abs(d$X- q1)==min(abs(d$X- q1)))[1]
+    q3_pos <- which(abs(d$X- q3)==min(abs(d$X- q3)))[1]
+    d$X[q1_pos] <- q1
+    d$X[q3_pos] <- q3
   }
 
   if(binaryX==T){
@@ -69,21 +69,21 @@ predict_gam_diff <- function(fit, d, quantile_diff=c(0.25,0.75), Xvar, Yvar, bin
   # take difference from the 25th percentile of X
   diff <- t(apply(Xp,1,function(x) x - Xp[q1_pos,]))
 
-  # calculate the predicted differences
+  # calculate the predicted HR's
   point.diff <- diff %*% coef(fit)
+  point.HR <- exp(point.diff)
 
   # calculate the pointwise SE - naive SE
   se.diff <- sqrt(diag( diff%*%vcov(fit)%*%t(diff) ) )
 
   # calculate upper and lower bounds
-  lb.diff <- point.diff - 1.96*se.diff
-  ub.diff <- point.diff + 1.96*se.diff
+  lb.HR <- exp(point.diff - 1.96*se.diff)
+  ub.HR <- exp(point.diff + 1.96*se.diff)
   Zval <-  abs(point.diff/se.diff)
   Pval <- exp(-0.717*Zval - 0.416*Zval^2)
 
   plotdf<-data.frame(Y=Yvar, X= Xvar, N=nrow(d), q1=d$X[q1_pos], q3=d$X[q3_pos],
-                     pred.q1=preds[q1_pos], pred.q3=preds[q3_pos],
-                     point.diff, lb.diff=lb.diff, ub.diff=ub.diff, Pval=Pval)
+                     point.HR=point.HR, lb.HR=lb.HR, ub.HR=ub.HR, Pval=Pval)
 
   if(binaryX==T){
     res <- plotdf[nrow(plotdf),]
