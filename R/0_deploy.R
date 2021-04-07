@@ -39,6 +39,9 @@
 # use_r("predict_gam_HR")
 # use_test()
 
+# use_r("plot_sig_heatmap")
+# use_test()
+
 
 
 #Load functions (use in console)
