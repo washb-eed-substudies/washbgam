@@ -95,7 +95,7 @@ fit_HR_GAM <- function(d, Y, X, age, W=NULL,
     Wdf <- W
     Wdf$constant<-rep(1,nrow(gamdat))
     for(i in 1:ncol(W)){
-      tmp<-glm(constant ~ ., data=Wdf, family="binomial")
+      tmp<-glm(constant ~ ., data=Wdf, family="gaussian")
       todrop <-  NULL
       todrop <- suppressWarnings(names(tmp$coefficients)[-1][as.vector(vif(tmp)) > 10][1])
       if(!is.null(todrop)&!is.na(todrop)){
