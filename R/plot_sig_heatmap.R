@@ -20,11 +20,14 @@ plot_sig_heatmap <- function(d,
                              Outcome="Outcome", Exposure="Exposure",
                              print.est=T, print.ci=F){
 
+  require(RColorBrewer)
+
   colnames(d)[colnames(d)==pval_var] <- "pval"
 
-  dfull <- expand_grid(d$Y, d$X)
+  dfull <- expand_grid(unique(d$Y), unique(d$X))
   colnames(dfull) <- c("Y","X")
   d <- left_join(dfull, d, by=c("Y","X"))
+  d <- distinct(d)
 
   #Get direction of estimate
   d$sign <- sign(d$point.diff)
@@ -34,10 +37,10 @@ plot_sig_heatmap <- function(d,
   d$pval_cat <- ifelse(d$sign== 1, paste0(d$pval_cat, " increase"), paste0(d$pval_cat, " decrease"))
   d$pval_cat[d$pval_cat %in% c("0.5-1 decrease", "0.5-1 increase")] <- "0.5-1"
   table(d$pval_cat)
-  d$pval_cat <- factor(d$pval_cat, levels = c("<0.001 decrease", "<0.05 decrease",
-                                              "0.05-0.2 decrease", "0.2-0.5 decrease", "0.5-1",
-                                              "0.05-0.2 increase", "0.2-0.5 increase",
-                                              "<0.05 increase", "<0.001 increase"))
+  d$pval_cat <- factor(d$pval_cat, levels = c("<0.01 decrease",
+                                              "<0.05 decrease", "0.05-0.2 decrease", "0.2-0.5 decrease",
+                                              "0.5-1", "0.05-0.2 increase", "0.2-0.5 increase",
+                                              "<0.05 increase", "<0.01 increase"))
 
   d$pval_cat <- addNA(d$pval_cat)
   levels(d$pval_cat) = c(levels(d$pval_cat), "Not estimated")
@@ -63,7 +66,7 @@ plot_sig_heatmap <- function(d,
   textcol = "grey20"
   cols = rev(brewer.pal(n = 9, name = "Spectral"))
 
-  colours <- c("<0.001 decrease" = cols[1],
+  colours <- c("<0.01 decrease" = cols[1],
                "<0.05 decrease" = cols[2],
                "0.05-0.2 decrease"  = cols[3],
                "0.2-0.5 decrease"  = cols[4],
@@ -71,9 +74,9 @@ plot_sig_heatmap <- function(d,
                "0.2-0.5 increase" = cols[6],
                "0.05-0.2 increase" = cols[7],
                "<0.05 increase" = cols[8],
-               "<0.001 increase" = cols[9],
+               "<0.01 increase" = cols[9],
                "Not estimated"="gray80")
-
+  d <- droplevels(d)
 
   hm <- ggplot(d, aes(x=X, y=Y, fill=pval_cat)) +
     geom_tile(colour="grey80",size=0.25) +
