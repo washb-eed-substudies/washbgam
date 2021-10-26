@@ -259,9 +259,9 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
 
   if(!is.null(V)){
     cat("\nInteraction p-value: ",LRp,"\n")
-    return(list(fit=fit, dat=d, int.p=LRp))
+    return(list(fit=fit, dat=d, int.p=LRp, covars=Wscreen))
   }else{
-    return(list(fit=fit, dat=d))
+    return(list(fit=fit, dat=d, covars=Wscreen))
   }
 }
 
