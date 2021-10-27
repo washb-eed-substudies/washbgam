@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-gam_simul_CI <- function(m,newdata,nreps=10000, xlab="", ylab="", title="") {
+gam_simul_CI <- function(m,newdata,nreps=10000, xlab="", ylab="", title="", gam_diff=NULL) {
   set.seed(12345)
   require(mgcv)
   require(dplyr)
@@ -56,6 +56,15 @@ gam_simul_CI <- function(m,newdata,nreps=10000, xlab="", ylab="", title="") {
     geom_path(aes(x=X, y=fit ), color="black") +
     xlab(xlab) + ylab(ylab) +
     ggtitle(title)
+
+  if(!is.null(gam_diff)){
+    p <- p +
+      geom_vline(xintercept = gam_diff$q1) +
+      geom_vline(xintercept = gam_diff$q3) +
+      ggtitle(paste0(round(gam_diff$point.diff,2)," (",
+                     round(gam_diff$lb.diff,2), ", ",
+                     round(gam_diff$ub.diff,2), ")"))
+  }
 
   return(list(p=p, pred=pred))
 }
