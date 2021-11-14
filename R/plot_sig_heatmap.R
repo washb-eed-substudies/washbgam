@@ -18,7 +18,8 @@
 plot_sig_heatmap <- function(d,
                              pval_var="Pval", title="",
                              Outcome="Outcome", Exposure="Exposure",
-                             print.est=T, print.ci=F){
+                             print.est=T, print.ci=F,
+                             null=0){
 
   require(RColorBrewer)
 
@@ -30,7 +31,11 @@ plot_sig_heatmap <- function(d,
   d <- distinct(d)
 
   #Get direction of estimate
-  d$sign <- sign(d$point.diff)
+  if(null==0){
+    d$sign <- sign(d$point.diff)
+  }else{
+    d$sign <- ifelse(d$point.diff>1,1,-1)
+  }
 
   #Get significance category
   d$pval_cat <- cut(d$pval, breaks = c(-1,0.01, 0.05, 0.2, 0.5, 2), labels = c("<0.01","<0.05","0.05-0.2","0.2-0.5","0.5-1"))
