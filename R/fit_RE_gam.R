@@ -51,6 +51,7 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     Vvar <-data.frame(V=rep(1, nrow(d)))
   }
 
+  collinear_vars <- NULL
   if(!is.null(W)){
     gamdat <- data.frame(Y, X, id, Vvar, W)
   }else{
@@ -93,7 +94,6 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     # tmp<-glm(constant ~ ., data=W, family=family)
     #https://daviddalpiaz.github.io/appliedstats/collinearity.html
 
-    collinear_vars <- NULL
     Wdf <- W
     Wdf$constant<-rep(1,nrow(gamdat))
     for(i in 1:ncol(W)){
