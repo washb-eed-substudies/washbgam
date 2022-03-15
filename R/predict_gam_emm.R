@@ -80,11 +80,12 @@ predict_gam_emm <- function(fit, d, quantile_diff = c(0.25, 0.75), Xvar, Yvar, b
                           q3 = d$X[q3_pos], pred.q1 = preds[q1_pos], pred.q3 = preds[q3_pos],
                           point.diff, lb.diff = lb.diff, ub.diff = ub.diff, Pval = Pval)
 
-      #if(binaryX == T){
-      temp_res <- resdf[nrow(resdf), ]
-      # }else{
-      #   temp_res <- resdf[q3_pos, ]
-      # }
+      if(binaryX==T){
+        temp_res <- resdf[1, ]
+      }else{
+        temp_res <- resdf[nrow(resdf), ]
+      }
+
 
       plotdf <- bind_rows(plotdf, resdf)
 
