@@ -68,7 +68,7 @@ predict_gam_emm <- function(fit, d, quantile_diff = c(0.25, 0.75), Xvar, Yvar, b
       d$V <- i
       preds <- predict(fit, newdata = d, type = "response")
       Xp <- predict(fit, newdata = d, type = "lpmatrix")
-      Xp <- Xp[order(d$X), ]
+      #Xp <- Xp[order(d$X), ] #caitlin debug fix... check
       diff <- t(apply(Xp, 1, function(x) x - Xp[Nrows+1, ]))
       point.diff <- diff %*% coef(fit)
       se.diff <- sqrt(diag(diff %*% vcov(fit) %*% t(diff)))
@@ -101,7 +101,7 @@ predict_gam_emm <- function(fit, d, quantile_diff = c(0.25, 0.75), Xvar, Yvar, b
       d$V <- i
       preds <- predict(fit, newdata = d, type = "response")
       Xp <- predict(fit, newdata = d, type = "lpmatrix")
-      Xp <- Xp[order(d$X), ]
+      #Xp <- Xp[order(d$X), ]
       diff <- t(apply(Xp, 1, function(x) x - Xp[Nrows+1, ]))
       point.diff <- diff %*% coef(fit)
       se.diff <- sqrt(diag(diff %*% vcov(fit) %*% t(diff)))
