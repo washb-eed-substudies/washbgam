@@ -42,6 +42,9 @@
 # use_r("plot_sig_heatmap")
 # use_test()
 
+# use_r("emm_simul_CI")
+# use_test()
+
 
 
 #Load functions (use in console)

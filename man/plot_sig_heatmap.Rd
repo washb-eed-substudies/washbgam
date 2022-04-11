@@ -11,7 +11,8 @@ plot_sig_heatmap(
   Outcome = "Outcome",
   Exposure = "Exposure",
   print.est = T,
-  print.ci = F
+  print.ci = F,
+  null = 0
 )
 }
 \arguments{

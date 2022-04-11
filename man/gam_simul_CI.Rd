@@ -4,7 +4,15 @@
 \alias{gam_simul_CI}
 \title{Title}
 \usage{
-gam_simul_CI(m, newdata, nreps = 10000, xlab = "", ylab = "", title = "")
+gam_simul_CI(
+  m,
+  newdata,
+  nreps = 10000,
+  xlab = "",
+  ylab = "",
+  title = "",
+  gam_diff = NULL
+)
 }
 \arguments{
 \item{title}{}
