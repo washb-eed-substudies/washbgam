@@ -16,9 +16,6 @@ predict_gam_emm(
 \arguments{
 \item{binaryX}{}
 }
-\value{
-
-}
 \description{
 Title
 }

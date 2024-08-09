@@ -22,9 +22,6 @@ fit_HR_GAM(
 
 \item{print}{}
 }
-\value{
-
-}
 \description{
 Title
 }

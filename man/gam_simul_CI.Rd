@@ -17,9 +17,6 @@ gam_simul_CI(
 \arguments{
 \item{title}{}
 }
-\value{
-
-}
 \description{
 Title
 }

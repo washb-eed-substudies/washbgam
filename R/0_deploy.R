@@ -46,6 +46,11 @@
 # use_test()
 
 
+# use_r("fit_washb_glm")
+# use_test()
+
+
+
 
 #Load functions (use in console)
 #devtools::load_all()

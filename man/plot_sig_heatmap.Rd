@@ -18,9 +18,6 @@ plot_sig_heatmap(
 \arguments{
 \item{print.ci}{}
 }
-\value{
-
-}
 \description{
 Title
 }

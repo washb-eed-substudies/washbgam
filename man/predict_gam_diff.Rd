@@ -16,9 +16,6 @@ predict_gam_diff(
 \arguments{
 \item{binaryX}{}
 }
-\value{
-
-}
 \description{
 Title
 }

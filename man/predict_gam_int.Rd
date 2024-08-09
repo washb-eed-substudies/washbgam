@@ -9,9 +9,6 @@ predict_gam_int(fit, d, quantile_diff = c(0.25, 0.75), Xvar, Yvar)
 \arguments{
 \item{Yvar}{}
 }
-\value{
-
-}
 \description{
 Title
 }

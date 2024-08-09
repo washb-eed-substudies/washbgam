@@ -9,9 +9,6 @@ emm_simul_CI(m, newdata, nreps = 10000, xlab = "", ylab = "", title = "")
 \arguments{
 \item{title}{}
 }
-\value{
-
-}
 \description{
 Title
 }

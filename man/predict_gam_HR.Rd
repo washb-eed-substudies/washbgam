@@ -16,9 +16,6 @@ predict_gam_HR(
 \arguments{
 \item{binaryX}{}
 }
-\value{
-
-}
 \description{
 Title
 }

@@ -9,9 +9,6 @@ plot_gam_diff(plotdf)
 \arguments{
 \item{plotdf}{}
 }
-\value{
-
-}
 \description{
 Title
 }
