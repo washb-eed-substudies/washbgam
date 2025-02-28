@@ -144,6 +144,7 @@ fit_washb_glm <- function (d, Y, X, W = NULL, forcedW = NULL, V = NULL, id = "cl
     res$lb <- res$coef - 1.96 * res$se
     res$ub <- res$coef + 1.96 * res$se
   }
+  res$N <- nrow(d)
 
   return(res)
 }
