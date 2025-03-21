@@ -12,6 +12,7 @@
 #' @param id
 #' @param family
 #' @param pval
+#' @param vim use vif() to drop collinear variables
 #' @param print
 #'
 #' @return
@@ -21,7 +22,7 @@
 
 fit_RE_gam <- function(d, Y, X, W=NULL,
                        forcedW=NULL,
-                       V=NULL, id="clusterid", family = "gaussian", pval = 0.2, print=TRUE){
+                       V=NULL, id="clusterid", family = "gaussian", pval = 0.2, vim=TRUE, print=TRUE){
 
   cat("\nNon-prescreened covariates: ", paste(forcedW, sep="", collapse=", "), "\n")
   #cat("Forced covariates:", forcedW,"\n\n")
@@ -95,14 +96,16 @@ fit_RE_gam <- function(d, Y, X, W=NULL,
     #https://daviddalpiaz.github.io/appliedstats/collinearity.html
 
     Wdf <- W
-    Wdf$constant<-rep(1,nrow(gamdat))
-    for(i in 1:ncol(W)){
-      tmp<-glm(constant ~ ., data=Wdf, family=family)
-      todrop <-  NULL
-      todrop <- suppressWarnings(names(tmp$coefficients)[-1][as.vector(vif(tmp)) > 10][1])
-      if(!is.null(todrop)&!is.na(todrop)){
-        collinear_vars <- c(collinear_vars,todrop)
-        Wdf <- Wdf[,colnames(Wdf)!=todrop]
+    if(vim==TRUE){
+      Wdf$constant<-rep(1,nrow(gamdat))
+      for(i in 1:ncol(W)){
+        tmp<-glm(constant ~ ., data=Wdf, family=family)
+        todrop <-  NULL
+        todrop <- suppressWarnings(names(tmp$coefficients)[-1][as.vector(vif(tmp)) > 10][1])
+        if(!is.null(todrop)&!is.na(todrop)){
+          collinear_vars <- c(collinear_vars,todrop)
+          Wdf <- Wdf[,colnames(Wdf)!=todrop]
+        }
       }
     }
 
